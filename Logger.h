@@ -64,10 +64,7 @@ public :
     inline static void print(const char* func, const Severity severity, const char* msg, ...);
     
     //## operation printToConsole(const char*,Severity,const char*)
-    inline static void printToConsole(const char* func, const Severity severity, const char* msg, ...);
-    
-    //## operation printToWindowsForms(const char*,Severity,const char*)
-    inline static void printToWindowsForms(const char* func, const Severity severity, const char* msg, ...);
+    inline static void printToConsole(const char* func, const Severity severity, const char* msg, va_list args);
     
     //## operation setSeverityLevel(Severity,bool)
     inline static void setSeverityLevel(const Severity severity, const bool level) noexcept;
@@ -116,7 +113,7 @@ inline void Logger::print(const char* func, const Logger::Severity severity, con
     //#]
 }
 
-inline void Logger::printToConsole(const char* func, const Logger::Severity severity, const char* msg, ...) {
+inline void Logger::printToConsole(const char* func, const Logger::Severity severity, const char* msg, va_list args) {
     //#[ operation printToConsole(const char*,Severity,const char*)
     #if defined(_MSC_VER) && !defined(_MSC_GTEST) 
     
@@ -126,39 +123,12 @@ inline void Logger::printToConsole(const char* func, const Logger::Severity seve
         const char* severityStr = severityToString(severity);
     
         printf("[%s] [%s] [%s] ", timeBuffer, func, severityStr);
-    
-        va_list args;
-        va_start(args, msg);
         vprintf(msg, args);
-        va_end(args);
         printf("\n");
     #endif
     //#]
 }
 
-inline void Logger::printToWindowsForms(const char* func, const Logger::Severity severity, const char* msg, ...) {
-    //#[ operation printToWindowsForms(const char*,Severity,const char*)
-    #if defined(_MSC_VER) && !defined(_MSC_GTEST) 
-        
-        // Call the managed function
-        char messageBuffer[1024]; // Adjust size as needed
-        char timeBuffer[20];
-        const char* severityStr = severityToString(severity);
-        getTime(timeBuffer, sizeof(timeBuffer));
-        
-        snprintf(messageBuffer, sizeof(messageBuffer), "[%s] [%s] [%s] ", timeBuffer, func, severityStr);
-        
-        // Start variable argument processing
-        va_list args;
-        va_start(args, msg);
-        // Format the message and append it to the message buffer
-        vsnprintf(messageBuffer + strlen(messageBuffer), sizeof(messageBuffer) - strlen(messageBuffer), msg, args);
-        // End variable argument processing
-        va_end(args);
-        ManagedAddTrace(const_cast<char*>(messageBuffer));
-    #endif
-    //#]
-}
 
 inline void Logger::setSeverityLevel(const Logger::Severity severity, const bool level) noexcept {
     //#[ operation setSeverityLevel(Severity,bool)
